@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ChatBot Inteligente - Calidad TI | UAEMex</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(to right, #004d26, #8BC34A);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    header {
+      width: 100%;
+      padding: 15px 20px;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.3);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(6px);
+    }
+
+    header h1 {
+      font-size: 1.8rem;
+      margin: 10px 0 5px;
+      text-shadow: 1px 1px 3px #000;
+    }
+
+    header img {
+      max-width: 80px;
+      margin-bottom: 10px;
+      border-radius: 10px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+    }
+
+    .chat-container {
+      background: rgba(255,255,255,0.1);
+      border-radius: 20px;
+      width: 90%;
+      max-width: 650px;
+      padding: 20px;
+      margin-top: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(10px);
+    }
+
+    .chat-box {
+      max-height: 400px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 10px;
+    }
+
+    .bot, .user {
+      padding: 12px 16px;
+      border-radius: 15px;
+      max-width: 85%;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    .bot { background-color: #1b5e20; align-self: flex-start; }
+    .user { background-color: #dcedc8; color: #000; align-self: flex-end; }
+
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .options button {
+      padding: 12px;
+      border: none;
+      border-radius: 12px;
+      background-color: #ffffff;
+      color: #1b5e20;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    .options button:hover {
+      background-color: #c5e1a5;
+      transform: scale(1.03);
+    }
+
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(10px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <!-- Cambia "tu-imagen.png" por el nombre real de tu archivo -->
+    <img src="potro.png" alt="UAEMex Logo">
+    <h1>🤖 ChatBot Inteligente - Calidad TI | UAEMex</h1>
+  </header>
+
+  <div class="chat-container">
+    <div class="chat-box" id="chatBox"></div>
+    <div class="options" id="options"></div>
+  </div>
+
+  <script>
+  const chatBox = document.getElementById('chatBox');
+  const options = document.getElementById('options');
+  let nombreUsuario = localStorage.getItem('nombreActual') || '';
+
+  const speak = (text) => {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'es-MX';
+    speechSynthesis.speak(utterance);
+  };
+
+  const printBot = (msg) => {
+    const div = document.createElement('div');
+    div.className = 'bot';
+    div.textContent = msg;
+    chatBox.appendChild(div);
+    chatBox.scrollTop = chatBox.scrollHeight;
+    speak(msg);
+  };
+
+  const printUser = (msg) => {
+    const div = document.createElement('div');
+    div.className = 'user';
+    div.textContent = msg;
+    chatBox.appendChild(div);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  };
+
+  const loadOptions = (opts) => {
+    options.innerHTML = '';
+    opts.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.textContent = opt.label;
+      btn.onclick = () => {
+        printUser(opt.label);
+        opt.action();
+      };
+      options.appendChild(btn);
+    });
+  };
+
+  const pedirNombre = () => {
+    printBot('¡Hola! ¿Cómo te llamas?');
+    options.innerHTML = '';
+
+    const input = document.createElement('input');
+    input.placeholder = 'Escribe tu nombre';
+    input.style.padding = '10px';
+    input.style.borderRadius = '8px';
+    input.style.border = 'none';
+    input.style.marginTop = '10px';
+    input.style.fontSize = '16px';
+    input.style.width = '80%';
+
+    const btn = document.createElement('button');
+    btn.textContent = 'Enviar';
+    btn.style.marginTop = '10px';
+    btn.style.padding = '10px';
+    btn.style.borderRadius = '8px';
+    btn.style.border = 'none';
+    btn.style.background = '#ffffff';
+    btn.style.color = '#006633';
+    btn.style.fontWeight = 'bold';
+    btn.style.cursor = 'pointer';
+
+    btn.onclick = () => {
+      const nombre = input.value.trim();
+      if (nombre !== '') {
+        nombreUsuario = nombre;
+        localStorage.setItem('nombreActual', nombre);
+        const usuarios = JSON.parse(localStorage.getItem('usuariosChat') || '[]');
+        usuarios.push(nombre);
+        localStorage.setItem('usuariosChat', JSON.stringify(usuarios));
+        printUser(nombre);
+        printBot(`¡Hola, ${nombreUsuario}! Soy tu Asesor TI Virtual. ¿En qué te puedo ayudar hoy?`);
+        cargarMenuPrincipal();
+      } else {
+        printBot('Por favor, escribe tu nombre.');
+      }
+    };
+
+    options.appendChild(input);
+    options.appendChild(btn);
+  };
+
+  const cargarMenuPrincipal = () => {
+    loadOptions([
+      { label: '¿Qué es un SLA?', action: showSLA },
+      { label: '¿Qué modelo de calidad me recomiendas para TI?', action: showModelos },
+      { label: '¿En qué se diferencian ISO 9001 e ISO 20000?', action: showDiferencias },
+      { label: '¿Qué es ITIL 4 y cómo funciona?', action: showITIL },
+      { label: '¿Qué es COBIT 2019 y para qué sirve?', action: showCOBIT },
+      { label: 'Otra pregunta', action: otraPregunta }
+    ]);
+  };
+
+  const showSLA = () => {
+    printBot('Un SLA (Service Level Agreement) es un acuerdo formal entre proveedor y cliente. Define niveles como disponibilidad, tiempo de respuesta y soporte. ¿Quieres un ejemplo?');
+    loadOptions([
+      { label: 'Sí', action: () => {
+        printBot('Por ejemplo, el correo debe tener 99.9% de disponibilidad y respuesta en 2h ante fallos. ¿Quieres saber cómo se mide un SLA?');
+        loadOptions([
+          { label: 'Sí', action: () => {
+            printBot('Se mide con: Uptime, tiempos promedio de respuesta, tasa de cumplimiento.');
+            endOptions();
+          } },
+          { label: 'No', action: endOptions }
+        ]);
+      }},
+      { label: 'No', action: endOptions }
+    ]);
+  };
+
+  const showModelos = () => {
+    printBot(`Depende de tus necesidades. Aquí tienes:\n- ITIL 4: procesos de soporte.\n- ISO 9001: calidad general.\n- ISO 20000: gestión TI.\n- COBIT 2019: gobierno TI.\n¿Te gustaría saber más de alguno?`);
+    loadOptions([
+      { label: 'ITIL 4', action: showITIL },
+      { label: 'ISO 9001', action: () => {
+        printBot('ISO 9001 aplica a todo tipo de organización, enfocada en satisfacción del cliente, mejora continua y liderazgo.');
+        endOptions();
+      }},
+      { label: 'ISO 20000', action: () => {
+        printBot('ISO 20000 gestiona servicios TI como incidentes, cambios y niveles de servicio.');
+        endOptions();
+      }},
+      { label: 'COBIT 2019', action: showCOBIT },
+      { label: 'No, gracias', action: endOptions }
+    ]);
+  };
+
+  const showDiferencias = () => {
+    printBot('ISO 9001: calidad general. ISO 20000: servicios TI. 9001 aplica a cualquier organización, 20000 se enfoca en TI.');
+    loadOptions([
+      { label: '¿Deseas ejemplos de aplicación?', action: () => {
+        printBot('Ej: una universidad aplica ISO 9001 para educación y ISO 20000 para su área de TI.');
+        endOptions();
+      }},
+      { label: 'No', action: endOptions }
+    ]);
+  };
+
+  const showITIL = () => {
+    printBot('ITIL 4 es un marco de buenas prácticas para gestionar servicios TI. Clave: mejora continua, entrega de valor, enfoque en cliente.');
+    endOptions();
+  };
+
+  const showCOBIT = () => {
+    printBot('COBIT 2019 es un marco de gobierno y gestión de TI. Ayuda a alinear TI con los objetivos estratégicos del negocio.');
+    endOptions();
+  };
+
+  const otraPregunta = () => {
+    printBot('Puedes preguntar sobre auditorías, mejora continua, KPI o herramientas como ServiceNow.');
+    endOptions();
+  };
+
+const endOptions = () => {
+  loadOptions([
+    { label: 'Sí, otra consulta', action: cargarMenuPrincipal },
+    { label: 'No, quiero salir', action: () => {
+      printBot(`¡Gracias por usar el ChatBot, ${nombreUsuario}!`);
+      // Borramos el nombre actual
+      localStorage.removeItem('nombreActual');
+      nombreUsuario = '';
+      loadOptions([
+        { label: 'Agregar nuevo usuario', action: () => location.reload() },
+        { label: 'Salir', action: () => printBot('Sesión finalizada. ¡Hasta pronto!') }
+      ]);
+    }}
+  ]);
+};
+
+  const start = () => {
+    if (!nombreUsuario) {
+      pedirNombre();
+    } else {
+      printBot(`¡Hola de nuevo, ${nombreUsuario}! ¿En qué puedo ayudarte hoy?`);
+      cargarMenuPrincipal();
+    }
+  };
+
+  start();
+</script>
+</body>
+</html>
